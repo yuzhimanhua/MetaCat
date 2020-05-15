@@ -5,6 +5,6 @@ samples=100
 
 python preprocess.py --dataset ${dataset}
 
-./line -train edge.txt --output out.emb -binary 0 -size 100 -order 1 -negative 5 -samples ${samples} -rho 0.025 -threads 20
+./line -train edge.txt -output out.emb -binary 0 -size 100 -order 1 -negative 5 -samples ${samples} -rho 0.025 -threads 20
 
 python postprocess.py
