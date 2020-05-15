@@ -8,45 +8,54 @@ parser = argparse.ArgumentParser(description='main', formatter_class=argparse.Ar
 parser.add_argument('--dataset', default='bio', choices=['bio', 'ai', 'cyber', 'amazon', 'twitter'])
 args = parser.parse_args()
 
-dataset_path = '../' + args.dataset + '/'
+folder = '../' + args.dataset + '/'
+
+lengths = {'bio': 600, 'ai': 600, 'cyber': 800, 'amazon': 150, 'twitter': 30}
 
 cnt = defaultdict(int)
 rpid = set()
 label = set()
 tag = set()
+prod = set()
 user = set()
 
 doc_id = []
-length = 600
+length = lengths[dataset]
 
-with open(dataset_path + 'doc_id.txt') as fin:
+with open(folder+'doc_id.txt') as fin:
 	for line in fin:
 		doc_idx = line.strip().split(':')[1].split(',')
 		doc_id += [int(x) for x in doc_idx]
 
 label2id = dict()
 
-with open(dataset_path + args.dataset + '.json') as fin:
+with open(folder+dataset+'.json') as fin:
 	for idx, line in enumerate(fin):
 		
 		js = json.loads(line)
 
+		js['label'] = js['label'].replace(' ', '-')
+
 		if js['label'] not in label2id:
 			label2id[js['label']] = len(label2id)
 
-		rpid.add('$REPO'+str(idx))
-		user.add('$USER'+js['user'])
-		label.add('$LABEL'+js['label']+'$'+str(label2id[js['label']]))
+		rpid.add('$DOCU_'+str(idx))
+		user.add('$USER_'+js['user'])
+		label.add('$LABL_'+js['label']+'$'+str(label2id[js['label']]))
 
-		for T in js['tags']:
-			tag.add('$TAG'+T.lower())
+		if dataset in ['bio', 'ai', 'twitter']:
+			for T in js['tags']:
+				tag.add('$TAG_'+T.lower())
+
+		if dataset in ['amazon']:
+			prod.add('$PROD_'+js['product'])
 
 		W = js['text'].lower().split()
 		for token in W[:length]:
 			cnt[token] += 1
 
 node2id = defaultdict()
-with open('node2id.txt', 'w') as fout:
+with open(folder+'node2id.txt', 'w') as fout:
 	for R in rpid:
 		node2id[R] = len(node2id)
 		fout.write(R+' '+str(node2id[R])+'\n')
@@ -59,32 +68,39 @@ with open('node2id.txt', 'w') as fout:
 		node2id[L] = len(node2id)
 		fout.write(L+' '+str(node2id[L])+'\n')
 
-	for T in tag:
-		node2id[T] = len(node2id)
-		fout.write(T+' '+str(node2id[T])+'\n')
+	if dataset in ['bio', 'ai', 'twitter']:
+		for T in tag:
+			node2id[T] = len(node2id)
+			fout.write(T+' '+str(node2id[T])+'\n')
+
+	if dataset in ['amazon']:
+		for P in prod:
+			node2id[P] = len(node2id)
+			fout.write(P+' '+str(node2id[P])+'\n')
 
 	for W in cnt:
 		if cnt[W] < 10:
 			continue
 		node2id[W] = len(node2id)
-		node2id[W+'$_CONTEXT'] = len(node2id)
+		node2id['$CTXT_'+W] = len(node2id)
 		fout.write(W+' '+str(node2id[W])+'\n')
-		fout.write(W+'$_CONTEXT'+' '+str(node2id[W+'$_CONTEXT'])+'\n')
+		fout.write('$CTXT_'+W+' '+str(node2id['$CTXT_'+W])+'\n')
 
 moduli = len(node2id)+1
 win = 5
 edge = defaultdict(int)
 
-with open(dataset_path + args.dataset + '.json') as fin:
+with open(folder+dataset+'.json') as fin:
 	for idx, line in enumerate(fin):	
 		if idx % 1000 == 0:
 			print(idx)
 		js = json.loads(line)
 
-		R = '$REPO'+str(idx)
-		U = '$USER'+js['user']
-		L = '$LABEL'+js['label']+'$'+str(label2id[js['label']])
-		Ts = ['$TAG'+x.lower() for x in js['tags']]
+		js['label'] = js['label'].replace(' ', '-')
+
+		R = '$DOCU_'+str(idx)
+		U = '$USER_'+js['user']
+		L = '$LABL_'+js['label']+'$'+str(label2id[js['label']])
 		W = js['text'].lower().split()
 
 		sent = []
@@ -98,10 +114,10 @@ with open(dataset_path + args.dataset + '.json') as fin:
 				if j >= len(sent):
 					continue
 				id1 = node2id[sent[i]]
-				id2 = node2id[sent[j]+'$_CONTEXT']
+				id2 = node2id['$CTXT_'+sent[j]]
 				edge[id1*moduli+id2] += 1
 				id1 = node2id[sent[j]]
-				id2 = node2id[sent[i]+'$_CONTEXT']
+				id2 = node2id['$CTXT_'+sent[i]]
 				edge[id1*moduli+id2] += 1
 
 		for i in range(len(sent)):
@@ -119,14 +135,6 @@ with open(dataset_path + args.dataset + '.json') as fin:
 		id2 = node2id[U]
 		edge[id1*moduli+id2] += win * length
 
-		for T in Ts:
-			id1 = node2id[R]
-			id2 = node2id[T]
-			edge[id1*moduli+id2] += win
-			id1 = node2id[T]
-			id2 = node2id[R]
-			edge[id1*moduli+id2] += win
-
 		if idx in doc_id:
 			id1 = node2id[R]
 			id2 = node2id[L]
@@ -135,7 +143,26 @@ with open(dataset_path + args.dataset + '.json') as fin:
 			id2 = node2id[R]
 			edge[id1*moduli+id2] += win * length
 
-with open('edge.txt', 'w') as fout:
+		if dataset in ['bio', 'ai', 'twitter']:
+			Ts = ['$TAG_'+x.lower() for x in js['tags']]
+			for T in Ts:
+				id1 = node2id[R]
+				id2 = node2id[T]
+				edge[id1*moduli+id2] += win
+				id1 = node2id[T]
+				id2 = node2id[R]
+				edge[id1*moduli+id2] += win
+
+		if dataset in ['amazon']:
+			P = '$PROD_'+js['product']
+			id1 = node2id[P]
+			id2 = node2id[R]
+			edge[id1*moduli+id2] += win * length
+			id1 = node2id[R]
+			id2 = node2id[P]
+			edge[id1*moduli+id2] += win * length
+
+with open(folder+'edge.txt', 'w') as fout:
 	for e in edge:
 		id1 = e // moduli
 		id2 = e % moduli

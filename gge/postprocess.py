@@ -16,7 +16,7 @@ with open('out.emb') as fin, open('embedding_gge', 'w') as fout:
 		tmp = line.strip().split()
 		tmp[0] = id2node[tmp[0]]
 		
-		if tmp[0].startswith('$LABEL') or tmp[0].startswith('$TAG') or (not tmp[0].startswith('$') and not tmp[0].endswith('$_CONTEXT')):
+		if tmp[0].startswith('$LABL_') or tmp[0].startswith('$TAG_') or not tmp[0].startswith('$'):
 			output.append(' '.join(tmp)+'\n')
 
 	fout.write(str(len(output))+'\t100\n')

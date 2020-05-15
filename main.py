@@ -34,7 +34,7 @@ def load_embedding(vocabulary_inv, num_class, dataset_name, embedding_name):
 
     centers = [None for _ in range(num_class)]
     for word in embedding_model.vocab:
-    	if word.startswith('$LABEL'):
+    	if word.startswith('$LABL_'):
     		centers[int(word.split('$')[-1])] = embedding_model[word] / np.linalg.norm(embedding_model[word])
 
     return embedding_weights, centers
