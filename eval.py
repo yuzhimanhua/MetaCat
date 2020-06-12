@@ -2,7 +2,12 @@ import string
 from sklearn.metrics import f1_score
 from sklearn.metrics import confusion_matrix
 
-dataset = 'bio'
+import argparse
+parser = argparse.ArgumentParser(description='main', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
+parser.add_argument('--dataset', default='bio', choices=['bio', 'ai', 'cyber', 'amazon', 'twitter'])
+args = parser.parse_args()
+dataset = args.dataset
 
 train = []
 with open(dataset+'/doc_id.txt') as fin:
