@@ -114,7 +114,7 @@ if __name__ == "__main__":
 
 	elif args.dataset == 'ai':
 		max_sequence_length = 600
-		pretrain_epochs = 25
+		pretrain_epochs = 30
 		kappa = 120
 
 	elif args.dataset == 'cyber':
