@@ -116,32 +116,32 @@ with open(folder+args.dataset+'.json') as fin:
 				id1 = node2id[sent[i]]
 				id2 = node2id['$CTXT_'+sent[j]]
 				edge[id1*moduli+id2] += 1
-				id1 = node2id[sent[j]]
-				id2 = node2id['$CTXT_'+sent[i]]
-				edge[id1*moduli+id2] += 1
+				# id1 = node2id[sent[j]]
+				# id2 = node2id['$CTXT_'+sent[i]]
+				# edge[id1*moduli+id2] += 1
 
 		for i in range(len(sent)):
 			id1 = node2id[R]
 			id2 = node2id[sent[i]]
 			edge[id1*moduli+id2] += win
-			id1 = node2id[sent[i]]
-			id2 = node2id[R]
-			edge[id1*moduli+id2] += win
+			# id1 = node2id[sent[i]]
+			# id2 = node2id[R]
+			# edge[id1*moduli+id2] += win
 			
 		id1 = node2id[U]
 		id2 = node2id[R]
 		edge[id1*moduli+id2] += win * length
-		id1 = node2id[R]
-		id2 = node2id[U]
-		edge[id1*moduli+id2] += win * length
+		# id1 = node2id[R]
+		# id2 = node2id[U]
+		# edge[id1*moduli+id2] += win * length
 
 		if idx in doc_id:
-			id1 = node2id[R]
-			id2 = node2id[L]
-			edge[id1*moduli+id2] += win * length
 			id1 = node2id[L]
 			id2 = node2id[R]
 			edge[id1*moduli+id2] += win * length
+			# id1 = node2id[R]
+			# id2 = node2id[L]
+			# edge[id1*moduli+id2] += win * length
 
 		if args.dataset in ['bio', 'ai', 'twitter']:
 			Ts = ['$TAG_'+x.lower() for x in js['tags']]
@@ -149,18 +149,18 @@ with open(folder+args.dataset+'.json') as fin:
 				id1 = node2id[R]
 				id2 = node2id[T]
 				edge[id1*moduli+id2] += win
-				id1 = node2id[T]
-				id2 = node2id[R]
-				edge[id1*moduli+id2] += win
+				# id1 = node2id[T]
+				# id2 = node2id[R]
+				# edge[id1*moduli+id2] += win
 
 		if args.dataset in ['amazon']:
 			P = '$PROD_'+js['product']
 			id1 = node2id[P]
 			id2 = node2id[R]
 			edge[id1*moduli+id2] += win * length
-			id1 = node2id[R]
-			id2 = node2id[P]
-			edge[id1*moduli+id2] += win * length
+			# id1 = node2id[R]
+			# id2 = node2id[P]
+			# edge[id1*moduli+id2] += win * length
 
 with open('edge.txt', 'w') as fout:
 	for e in edge:
