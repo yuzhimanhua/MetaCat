@@ -79,6 +79,7 @@ If you find the implementation useful, please cite the following paper:
   title={Minimally Supervised Categorization of Text with Metadata},
   author={Zhang, Yu and Meng, Yu and Huang, Jiaxin and Xu, Frank F. and Wang, Xuan and Han, Jiawei},
   booktitle={SIGIR'20},
+  pages={1231--1240},
   year={2020},
   organization={ACM}
 }
