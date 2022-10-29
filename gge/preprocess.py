@@ -2,6 +2,7 @@ import string
 import json
 from collections import defaultdict
 import argparse
+from tqdm import tqdm
 
 parser = argparse.ArgumentParser(description='main', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('--dataset', default='bio', choices=['bio', 'ai', 'cyber', 'amazon', 'twitter'])
@@ -25,7 +26,7 @@ with open(folder+'doc_id.txt') as fin:
 		doc_id += [int(x) for x in doc_idx]
 		label.add('$LABL_'+data[0])
 
-with open(folder+'/meta_dict.json') as fin:
+with open(folder+'meta_dict.json') as fin:
 	meta_dict = json.load(fin)
 	globl = meta_dict['global']
 	local = meta_dict['local']
@@ -34,19 +35,19 @@ metadata = set()
 document = set()
 cnt = defaultdict(int)
 with open(folder+dataset+'.json') as fin:
-	for idx, line in enumerate(fin):
-		js = json.loads(line)
+	for idx, line in enumerate(tqdm(fin)):
+		data = json.loads(line)
 		document.add('$DOCU_'+str(idx))
 
 		for gm in globl:
-			for x in js[gm]:
+			for x in data[gm]:
 				metadata.add('$'+gm.upper()+'_'+x)
 		
 		for lm in local:
-			for x in js[lm]:
+			for x in data[lm]:
 				metadata.add('$'+lm.upper()+'_'+x) 
 
-		W = js['text'].split()
+		W = data['text'].split()
 		for token in W[:length]:
 			cnt[token] += 1
 
@@ -76,14 +77,12 @@ mod = len(node2id)+1
 win = 5
 edge = defaultdict(int)
 with open(folder+dataset+'.json') as fin:
-	for idx, line in enumerate(fin):	
-		if idx % 1000 == 0:
-			print(idx)
-		js = json.loads(line)
+	for idx, line in enumerate(tqdm(fin)):	
+		data = json.loads(line)
 
-		L = '$LABL_'+str(js['label'])
+		L = '$LABL_'+str(data['label'])
 		D = '$DOCU_'+str(idx)
-		W = js['text'].split()
+		W = data['text'].split()
 
 		sent = []
 		for token in W[:length]:
@@ -110,14 +109,14 @@ with open(folder+dataset+'.json') as fin:
 			edge[id1*mod+id2] += win * length
 
 		for gm in globl:
-			for x in js[gm]:
+			for x in data[gm]:
 				M = '$'+gm.upper()+'_'+x
 				id1 = node2id[M]
 				id2 = node2id[D]
 				edge[id1*mod+id2] += win * length
 
 		for lm in local:
-			for x in js[lm]:
+			for x in data[lm]:
 				M = '$'+lm.upper()+'_'+x
 				id1 = node2id[D]
 				id2 = node2id[M]

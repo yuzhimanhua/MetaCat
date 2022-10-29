@@ -9,19 +9,19 @@ args = parser.parse_args()
 dataset = args.dataset
 
 train = []
-with open(dataset+'/doc_id.txt') as fin:
+with open(f'{dataset}/doc_id.txt') as fin:
 	for line in fin:
 		idx = line.strip().split(':')[1].split(',')
 		train += [int(x) for x in idx]
 
 y = []
-with open(dataset+'/dataset.csv') as fin:
+with open(f'{dataset}/dataset.csv') as fin:
 	for idx, line in enumerate(fin):
 		if idx not in train:
 			y.append(line.strip().split(',')[0])
 
 y_pred = []
-with open(dataset+'/out.txt') as fin:
+with open(f'{dataset}/out.txt') as fin:
 	for idx, line in enumerate(fin):
 		if idx not in train:
 			y_pred.append(line.strip())
