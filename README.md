@@ -114,7 +114,7 @@ With the embedding file, you can train the classifier as mentioned in Quick Star
 Please always refer to the example datasets when adapting the code for a new dataset.
 
 ## Citation
-If you find the implementation useful, please cite the following paper:
+If you find this repository useful, please cite the following paper:
 ```
 @inproceedings{zhang2020minimally,
   title={Minimally Supervised Categorization of Text with Metadata},
